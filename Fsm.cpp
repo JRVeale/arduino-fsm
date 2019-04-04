@@ -1,4 +1,5 @@
-// This file is part of arduino-fsm.
+// This software has been adapted from arduino-fsm by JRVeale to give additional functionality
+// All of the below stands also for this software
 //
 // arduino-fsm is free software: you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -145,6 +146,14 @@ void Fsm::run_machine()
     m_current_state->on_state();
     
   Fsm::check_timed_transitions();
+}
+
+State& Fsm::get_current_state() {
+	return *m_current_state;
+}
+
+bool Fsm::is_in_state(State* s) {
+	return s == m_current_state;
 }
 
 void Fsm::make_transition(Transition* transition)
