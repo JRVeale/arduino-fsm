@@ -50,9 +50,9 @@ public:
   void trigger(int event);
   void run_machine();
   
-  State get_current_state(){
-    return m_current_state;
-  }
+  State& get_current_state();
+
+  bool is_in_state(State &s);
 
 private:
   struct Transition
