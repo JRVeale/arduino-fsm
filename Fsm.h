@@ -53,7 +53,7 @@ public:
   
   State& get_current_state();
 
-  bool is_in_state(State &s);
+  bool is_in_state(State* s);
 
 private:
   struct Transition

@@ -152,8 +152,8 @@ State& Fsm::get_current_state() {
 	return *m_current_state;
 }
 
-bool Fsm::is_in_state(State &s) {
-	return &s == m_current_state;
+bool Fsm::is_in_state(State* s) {
+	return s == m_current_state;
 }
 
 void Fsm::make_transition(Transition* transition)
