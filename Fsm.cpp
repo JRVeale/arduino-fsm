@@ -1,4 +1,5 @@
-// This file is part of arduino-fsm.
+// This software has been adapted from arduino-fsm by JRVeale to give additional functionality
+// All of the below stands also for this software
 //
 // arduino-fsm is free software: you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
