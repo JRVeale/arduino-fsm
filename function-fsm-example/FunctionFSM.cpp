@@ -123,15 +123,15 @@ void FunctionFsm::run_machine(){
 
 void FunctionFsm::make_transition(Transition* transition) {
   //Execute handlers in the correct order
-  if (!transition->state_from->on_exit) {  //if nullptr (see [func.wrap.func] paragraph 8 in standard)
+  if (!!transition->state_from->on_exit) {  //if not nullptr (see [func.wrap.func] paragraph 8 in standard)
     transition->state_from->on_exit();
   }
   
-  if (!transition->on_transition) {  //if nullptr (see [func.wrap.func] paragraph 8 in standard)
+  if (!!transition->on_transition) {  //if not nullptr (see [func.wrap.func] paragraph 8 in standard)
     transition->on_transition();
   }
   
-  if (!transition->state_to->on_enter) {
+  if (!!transition->state_to->on_enter) {
     transition->state_to->on_enter();
   }
   
