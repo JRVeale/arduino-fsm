@@ -16,7 +16,8 @@
 #include <functional>
 
 //include Arduino for access to millis() (a millisecond tick count)
-//could easily remove if using stdlib's timers
+//(this is currently for use on an ESP32, which supports Arduino's libraries)
+//could easily remove if using stdlib's timers instead
 #if defined(ARDUINO) && ARDUINO >= 100
   #include <Arduino.h>
 #else
