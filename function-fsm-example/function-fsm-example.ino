@@ -104,8 +104,8 @@ void setup(){
   
   Serial.println("DEBUG: Serial opened.");
   //myclass.init();
-  fsm.add_transition(&state_a, &state_b, TOGGLE_SWITCH, a_on_trans_b);
-  fsm.add_transition(&state_b, &state_a, TOGGLE_SWITCH, b_on_trans_a);
+  fsm.add_transition(&state_a, &state_b, TOGGLE_SWITCH, &a_on_trans_b);
+  fsm.add_transition(&state_b, &state_a, TOGGLE_SWITCH, &b_on_trans_a);
   Serial.println("DEBUG: Finished setup.");
 }
 
