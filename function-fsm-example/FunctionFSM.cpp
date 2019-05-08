@@ -23,17 +23,11 @@ FunctionState::FunctionState(std::function<void()> on_enter,
 
 FunctionFsm::FunctionFsm(FunctionState* initial_state)
 : m_current_state(initial_state),
-  m_transitions(NULL),
-  m_num_transitions(0),
-  m_num_timed_transitions(0),
+  m_transitions(),
   m_initialized(false)
 {}
 
 FunctionFsm::~FunctionFsm(){
-  free(m_transitions);
-  free(m_timed_transitions);
-  m_transitions = NULL;
-  m_timed_transitions = NULL;
 }
 
 void FunctionFsm::add_transition(FunctionState* state_from,
@@ -46,13 +40,8 @@ void FunctionFsm::add_transition(FunctionState* state_from,
                                                          state_to,
                                                          event,
                                                          on_transition);
-  //all this manual memory management seems silly. m_transitions could easily be
-  //a std::list or whatever instead of a pointer.
-  m_transitions = (Transition*) realloc (m_transitions,
-                                         (m_num_transitions + 1)
-                                          * sizeof(Transition));
-  m_transitions[m_num_transitions] = transition;
-  m_num_transitions++;
+  //Replaced pointers and realloc with std::vector
+  m_transitions.push_back(transition);
 }
 
 void FunctionFsm::add_timed_transition(FunctionState* state_from,
@@ -71,11 +60,7 @@ void FunctionFsm::add_timed_transition(FunctionState* state_from,
   timed_transition.start = 0;
   timed_transition.interval = interval;
   
-  m_timed_transitions = (TimedTransition*) realloc(m_timed_transitions,
-                                                   (m_num_timed_transitions + 1)
-                                                    * sizeof(TimedTransition));
-  m_timed_transitions[m_num_timed_transitions] = timed_transition;
-  m_num_timed_transitions++;
+  m_timed_transitions.push_back(timed_transition);
 }
 
 FunctionFsm::Transition FunctionFsm::create_transition(FunctionState* state_from,
@@ -94,10 +79,9 @@ FunctionFsm::Transition FunctionFsm::create_transition(FunctionState* state_from
 void FunctionFsm::trigger(int event){
   if(m_initialized){
     //Find the transition with the current state and given event.
-    for (int i = 0; i < m_num_transitions; ++i){
-      if (m_transitions[i].state_from == m_current_state
-          && m_transitions[i].event == event) {
-        FunctionFsm::make_transition(&(m_transitions[i]));
+    for (auto& t : m_transitions){
+      if (t.state_from == m_current_state && t.event == event) {
+        FunctionFsm::make_transition(&t);
         return;
       }
     }
@@ -105,17 +89,16 @@ void FunctionFsm::trigger(int event){
 }
 
 void FunctionFsm::check_timed_transitions(){
-  for (int i = 0; i < m_num_transitions; ++i){
-    TimedTransition* transition = &m_timed_transitions[i];
-    if(transition->transition.state_from == m_current_state){
-      if(transition->start == 0){
-        transition->start = millis();
+  for (auto& tt : m_timed_transitions){
+    if(tt.transition.state_from == m_current_state){
+      if(tt.start == 0){
+        tt.start = millis();
       }
       else {
         unsigned long now = millis();
-        if (now - transition->start >= transition->interval){
-          FunctionFsm::make_transition(&(transition->transition));
-          transition->start = 0;
+        if (now - tt.start >= tt.interval){
+          FunctionFsm::make_transition(&(tt.transition));
+          tt.start = 0;
         }
       }
     }
@@ -156,10 +139,9 @@ void FunctionFsm::make_transition(Transition* transition) {
   
   //Initialise all timed transitions from m_current_state
   unsigned long now = millis();
-  for (int i = 0; i < m_num_timed_transitions; ++i) {
-    TimedTransition* ttransition = &m_timed_transitions[i];
-    if(ttransition->transition.state_from == m_current_state){
-      ttransition->start = now;
+  for (auto& tt : m_timed_transitions) {
+    if(tt.transition.state_from == m_current_state){
+      tt.start = now;
     }
   }
 }

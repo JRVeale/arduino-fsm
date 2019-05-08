@@ -14,6 +14,7 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 
 //include Arduino for access to millis() (a millisecond tick count)
 //(this is currently for use on an ESP32, which supports Arduino's libraries)
@@ -86,10 +87,9 @@ private:
 
 private:
   FunctionState* m_current_state;
-  Transition* m_transitions;
-  int m_num_transitions;
   
-  TimedTransition* m_timed_transitions;
-  int m_num_timed_transitions;
+  std::vector<Transition> m_transitions;
+  std::vector<TimedTransition> m_timed_transitions;
+
   bool m_initialized;
 };
