@@ -2,11 +2,14 @@
 
 #include "FunctionFSM.h"
 
-/*class MyClass {
+class MyClass {
 private:
   //class variables
   char a = 'a';
   char b = 'b';
+  unsigned long last_print = 0;
+  unsigned long interval = 1000;
+  
   
   //fsm triggers
   enum Trigger {
@@ -15,13 +18,27 @@ private:
   };
 
   //fsm state functions
-  void a_on_enter(){ Serial.print("Entering a: "); }
-  void a_on(){ Serial.print(a); }
+  void a_on_enter(){
+    Serial.print("Entering a: ");
+  }
+  void a_on(){
+    if ( millis() - last_print > interval ){
+      Serial.print(a);
+      last_print = millis();
+    }
+  }
   void a_on_exit(){ Serial.println(" - exitting a. "); }
   void a_on_trans_b(){ Serial.println("Moving from a to b."); }
   
-  void b_on_enter(){ Serial.print("Entering b: "); }
-  void b_on(){ Serial.print(b); }
+  void b_on_enter(){
+    Serial.print("Entering b: ");
+  }
+  void b_on(){
+    if ( millis() - last_print > interval ){
+      Serial.print(b);
+      last_print = millis();
+    }
+  }
   void b_on_exit(){ Serial.println(" - exitting b. "); }
   void b_on_trans_a(){ Serial.println("Moving from b to a."); }
   
@@ -47,10 +64,8 @@ public:
   
   void init(){
     //add triggers
-    //fsm.add_transition(&state_a, &state_b, TOGGLE_SWITCH, [this]() { a_on_trans_b(); } );
-    //fsm.add_transition(&state_b, &state_a, TOGGLE_SWITCH, [this]() { b_on_trans_a(); } );
-    fsm.add_transition(&state_a, &state_b, TOGGLE_SWITCH, nullptr);
-    fsm.add_transition(&state_b, &state_a, TOGGLE_SWITCH, nullptr);
+    fsm.add_transition(&state_a, &state_b, TOGGLE_SWITCH, [this]() { a_on_trans_b(); } );
+    fsm.add_transition(&state_b, &state_a, TOGGLE_SWITCH, [this]() { b_on_trans_a(); } );
   }
   
   void update(){
@@ -64,9 +79,9 @@ public:
 };
 
 MyClass myclass;
-*/
 
-//non-class version.
+
+//non-class fsm.
 
 //variables
 char a = 'a';
@@ -80,29 +95,25 @@ enum Trigger {
 
 //fsm state functions
 void a_on_enter(){
-  Serial.print("Entering a: ");
   digitalWrite(LED_BUILTIN, LOW);
 }
-void a_on(){ Serial.print(a); }
-void a_on_exit(){ Serial.println(" - exitting a. "); }
-void a_on_trans_b(){ Serial.println("Moving from a to b."); }
 
 void b_on_enter(){
-  Serial.print("Entering b: ");
   digitalWrite(LED_BUILTIN, HIGH);
 }
-void b_on(){ Serial.print(b); }
-void b_on_exit(){ Serial.println(" - exitting b. "); }
-void b_on_trans_a(){ Serial.println("Moving from b to a."); }
 
 //fsm states (initialise in MyClass constructor)
-FunctionState state_a(&a_on_enter, &a_on, nullptr);
-FunctionState state_b(&b_on_enter, &b_on, nullptr);
+FunctionState state_a(&a_on_enter, nullptr, nullptr);
+FunctionState state_b(&b_on_enter, nullptr, nullptr);
 
 //fsm (initialise with MyClass constructor)
 FunctionFsm fsm(&state_a);
 
-unsigned long start = 0;
+
+void initfsm(){
+  fsm.add_transition(&state_a, &state_b, TOGGLE_SWITCH, nullptr);
+  fsm.add_transition(&state_b, &state_a, TOGGLE_SWITCH, nullptr);
+}
 
 void setup(){
   Serial.begin(19200);
@@ -110,17 +121,24 @@ void setup(){
   
   pinMode(LED_BUILTIN,OUTPUT);
   
-  //myclass.init();
-  fsm.add_transition(&state_a, &state_b, TOGGLE_SWITCH, &a_on_trans_b);
-  fsm.add_transition(&state_b, &state_a, TOGGLE_SWITCH, &b_on_trans_a);
+  //init class fsm (its states control Serial prints)
+  myclass.init();
+  
+  //init global fsm (its states control the built in LED)
+  initfsm();
 }
 
 void loop(){
-  //myclass.update();
+  myclass.update();
   fsm.run_machine();
   if(Serial.available()){
-    Serial.println("Triggered!");
+    Serial.println("\r\n");
+    Serial.read();
+    
+    //trigger class fsm transition
+    myclass.toggleFsm();
+    
+    //trigger global fsm trnasition
     fsm.trigger(TOGGLE_SWITCH);
-    //myclass.toggleFsm();
   }
 }
