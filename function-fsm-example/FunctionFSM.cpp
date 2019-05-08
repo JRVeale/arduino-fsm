@@ -109,12 +109,12 @@ void FunctionFsm::run_machine(){
   //first run must execute first state "on_enter"
   if (!m_initialized){
     m_initialized = true;
-    if (!m_current_state->on_enter) { //if nullptr (see [func.wrap.func] paragraph 8 in standard)
+    if (!!m_current_state->on_enter) { //if nullptr (see [func.wrap.func] paragraph 8 in standard)
       m_current_state->on_enter();
     }
   }
   
-  if (!m_current_state->on_state) {  //if nullptr (see [func.wrap.func] paragraph 8 in standard)
+  if (!!m_current_state->on_state) {  //if nullptr (see [func.wrap.func] paragraph 8 in standard)
     m_current_state->on_state();
   }
   
